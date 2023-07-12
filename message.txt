@@ -1,0 +1,281 @@
+#include <stdlib.h>
+#include <GL/glut.h> // Include the GLUT library
+#include <cmath>     // Include cmath for cos() and sin()
+
+float SPEED_MULT = 0.01;
+float DIST_MULT = 0.1;
+
+// Pause Global Variables
+bool isPaused = false;
+int pauseStartTime = 0;
+int pauseEndTime = 0;
+
+float angleMercury = 0.0f; // Angle for rotation for Mercury
+float speedMercury = 0.24f;
+float sunToMercury = 3.5f;
+
+float angleVenus = 0.0f; // Angle for rotation for Venus
+float speedVenus = 0.61f;
+float sunToVenus = 6.7f;
+
+float angleEarth = 0.0f; // Angle for rotation for Earth
+float speedEarth = 1.0f;
+float sunToEarth = 9.3f;
+
+float angleMars = 0.0f; // Angle for rotation for Mars
+float speedMars = 1.9f;
+float sunToMars = 14.2f;
+
+float angleJupiter = 0.0f; // Angle for rotation for Jupiter
+float speedJupiter = 11.86f;
+float sunToJupiter = 48.4f;
+
+float angleSaturn = 0.0f; // Angle for rotation for Saturn
+float speedSaturn = 29.42f;
+float sunToSaturn = 88.9f;
+
+float angleUranus = 0.0f; // Angle for rotation for Uranus
+float speedUranus = 83.75f;
+float sunToUranus = 179.0f;
+
+float angleNeptune = 0.0f; // Angle for rotation for Neptune
+float speedNeptune = 163.72f;
+float sunToNeptune = 288.0f;
+
+
+float camAngle = 0.0f;
+
+float cameraX = 0.0f; // Camera X position
+float cameraY = 0.0f; // Camera Y position (adjust this value for desired camera height)
+float zoom = -300.0f; // Zoom factor
+
+float camFocusX = 0.0f; // X position of the point the camera is focused on (adjust this value for desired horizontal focus point)
+float camFocusY = 0.0f; // Y position of the point the camera is focused on (adjust this value for desired vertical focus point)
+float camFocusZ = 0.0f; // Z position of the point the camera is focused on (adjust this value for desired depth focus point)
+
+float camAngleX = 0.0f;
+float camAngleY = 0.0f;
+float camAngleZ = 0.0f;
+
+// Define material properties
+GLfloat material_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
+GLfloat material_diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
+GLfloat material_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat material_shininess[] = { 50.0 };
+
+// Define light properties
+GLfloat light_position[] = { 0.0, 0.01, 0.0, 0.0 };
+GLfloat light_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
+GLfloat light_diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
+GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+
+void init()
+{
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glEnable(GL_DEPTH_TEST);
+
+    // Enable lighting
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHT0);
+
+    // Set light properties
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+
+    // Set material properties
+    glMaterialfv(GL_FRONT, GL_AMBIENT, material_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, material_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, material_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, material_shininess);
+
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glRotatef(camAngleX, camAngleY, camAngleZ, 0.0f);
+    gluPerspective(45.0f, 1.0f, 0.1f, 10000.0f); // Set a perspective view with field of view, aspect ratio, near and far clipping plane
+    gluLookAt(cameraX, cameraY, zoom, camFocusX, camFocusY, camFocusZ, 0.0f, 1.0f, 0.0f); // Set the view matrix with camera and focus point parameters
+
+    // Draw the central sphere
+    glColor3f(1.0f, 1.0f, 0.0f); // Set color to yellow
+    glutSolidSphere(15, 50, 50); // Draw a solid sphere with radius 0.5
+
+    // Draw the rotating sphere -- Planet1: Mercury
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleMercury, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToMercury * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(0.5f, 0.5f, 0.5f); // Set color to grey
+    glutSolidSphere(.2, 20, 20); // Draw a solid sphere with radius 0.2
+    glPopMatrix(); // Restore the previous transformation state
+
+    // Draw the rotating sphere -- Planet2: Venus
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleVenus, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToVenus * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(1.0f, 0.65f, 0.0f); // Set color to orange
+    glutSolidSphere(0.8, 20, 40); // Draw a solid sphere with radius 0.8
+    glPopMatrix(); // Restore the previous transformation state
+
+    // Draw the rotating sphere -- Planet3: Earth
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleEarth, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToEarth * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(0.0f, 1.0f, 0.0f); // Set color to green
+    glutSolidSphere(1, 20, 40); // Draw a solid sphere with radius 1
+    glPopMatrix(); // Restore the previous transformation state
+
+    // Draw the rotating sphere -- Planet4: Mars
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleMars, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToMars * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(0.8f, 0.3f, 0.0f); // Set color to burnt orangey color
+    glutSolidSphere(.5, 20, 40); // Draw a solid sphere with radius 0.5
+    glPopMatrix(); // Restore the previous transformation state
+
+    // Draw the rotating sphere -- Planet5: Jupiter
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleJupiter, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToJupiter * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(0.76f, 0.64f, 0.50f); // Set color to light brownish
+    glutSolidSphere(2, 20, 40); // Draw a solid sphere with radius 2
+    glPopMatrix(); // Restore the previous transformation state
+
+    // Draw the rotating sphere -- Planet6: Saturn
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleSaturn, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToSaturn * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(0.8f, 0.6f, 0.4f); // Set color to yellow brown
+    glutSolidSphere(1.9, 20, 40); // Draw a solid sphere with radius 1.9
+    glPopMatrix(); // Restore the previous transformation state
+
+    // Draw the rotating sphere -- Planet7: Uranus
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleUranus, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToUranus * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(0.5f, 0.85f, 0.92f); // Set color to light blue
+    glutSolidSphere(1.7, 20, 40); // Draw a solid sphere with radius 1.7
+    glPopMatrix(); // Restore the previous transformation state
+
+    // Draw the rotating sphere -- Planet8: Neptune
+    glPushMatrix(); // Save the current transformation state
+    glRotatef(angleNeptune, 0.0f, 1.0f, 0.0f); // Rotate around the y-axis
+    glTranslatef(sunToNeptune * DIST_MULT + 20, 0.0f, 0.0f); // Translate along the x-axis
+    glColor3f(0.12f, 0.46f, 1.0f); // Set color to deep blue
+    glutSolidSphere(1.6, 20, 40); // Draw a solid sphere with radius 1.6
+    glPopMatrix(); // Restore the previous transformation state
+
+    glutSwapBuffers();
+
+    // Pause button     
+    if (isPaused) {
+    	// Show pause screen
+    	glColor3f(1.0f, 1.0f, 1.0f); // Set color to white
+   	    glRasterPos2f(-50, 0);
+    	return;
+    }
+
+}
+
+void idle()
+{
+    // Update the rotation angle for the red sphere
+    angleMercury += speedMercury * SPEED_MULT;
+    if (angleMercury >= 360.0f) angleMercury -= 360.0f;
+
+    angleVenus += speedVenus * SPEED_MULT;
+    if (angleVenus >= 360.0f) angleVenus -= 360.0f;
+
+    angleEarth += speedEarth * SPEED_MULT;
+    if (angleEarth >= 360.0f) angleEarth -= 360.0f;
+
+    angleMars += speedMars * SPEED_MULT;
+    if (angleMars >= 360.0f) angleMars -= 360.0f;
+
+    angleJupiter += speedJupiter * SPEED_MULT;
+    if (angleJupiter >= 360.0f) angleJupiter -= 360.0f;
+
+    angleSaturn += speedSaturn * SPEED_MULT;
+    if (angleSaturn >= 360.0f) angleSaturn -= 360.0f;
+
+    angleUranus += speedUranus * SPEED_MULT;
+    if (angleUranus >= 360.0f) angleUranus -= 360.0f;
+
+    angleNeptune += speedNeptune * SPEED_MULT;
+    if (angleNeptune >= 360.0f) angleNeptune -= 360.0f;
+
+
+    glutPostRedisplay();
+}
+
+void specialKeys(int key, int x, int y)
+{
+    float cameraSpeed = 2.0f; // Camera movement speed
+
+    switch (key)
+    {
+    case GLUT_KEY_UP:
+        if (zoom < -50) {
+            zoom += 10.0f; // Decrease zoom factor for arrow key up
+        }
+        break;
+    case GLUT_KEY_DOWN:
+        if (zoom > -1000) {
+            zoom -= 10.0f; // Decrease zoom factor for arrow key up
+        }
+        break;
+    case GLUT_KEY_LEFT:
+        camAngleZ += 1;
+        break;
+    case GLUT_KEY_RIGHT:
+        camAngleZ -= 1;
+        break;
+    case 'p': // Toggle pause
+        case 'P':
+            if (isPaused) {
+                // Resume animation
+                int pauseTime = pauseEndTime - pauseStartTime;
+                angleMercury += speedMercury * pauseTime * SPEED_MULT;
+                angleVenus += speedVenus * pauseTime * SPEED_MULT;
+                angleEarth += speedEarth * pauseTime * SPEED_MULT;
+                angleMars += speedMars * pauseTime * SPEED_MULT;
+                angleJupiter += speedJupiter * pauseTime * SPEED_MULT;
+                angleSaturn += speedSaturn * pauseTime * SPEED_MULT;
+                angleUranus += speedUranus * pauseTime * SPEED_MULT;
+                angleNeptune += speedNeptune * pauseTime * SPEED_MULT;
+                pauseEndTime = glutGet(GLUT_ELAPSED_TIME);
+                isPaused = false;
+            } else {
+                // Pause animation
+                pauseStartTime = glutGet(GLUT_ELAPSED_TIME);
+                isPaused = true;
+            }
+            break;
+    }
+    glutPostRedisplay();
+}
+
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(640 * 2, 480 * 2);
+    glutCreateWindow("Rotating Sphere");
+
+    glutDisplayFunc(display);
+    init();
+    glutIdleFunc(idle);
+    glutSpecialFunc(specialKeys); // Register special keys callback function
+
+    //glEnable(GL_DEPTH_TEST);
+
+    glutMainLoop();
+
+    return 0;
+}
